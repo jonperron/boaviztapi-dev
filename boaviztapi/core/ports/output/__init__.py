@@ -1,0 +1,1 @@
+# Output ports - interfaces that the application core uses to call driven adapters

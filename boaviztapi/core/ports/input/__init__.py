@@ -1,0 +1,1 @@
+# Input ports - interfaces that driving adapters use to call the application core

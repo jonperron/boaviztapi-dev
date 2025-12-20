@@ -1,0 +1,1 @@
+# Domain models - pure business entities with no framework dependencies
