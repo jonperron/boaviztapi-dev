@@ -8,7 +8,7 @@ import csv
 import os
 from typing import Dict, Any, Optional
 
-from boaviztapi import data_dir
+from boaviztapi import data_dir, config
 from boaviztapi.core.ports.output.archetype_repository import IArchetypeRepository
 from boaviztapi.service.archetype import (
     get_archetype,
@@ -43,6 +43,9 @@ class ArchetypeRepository(IArchetypeRepository):
         Returns:
             Dictionary containing archetype configuration or None if not found
         """
+        if archetype_id == "default":
+            archetype_id = config.get("default_server", "platform_compute_medium")
+        
         cache_key = f"server:{archetype_id}"
         if cache_key in self._cache:
             return self._cache[cache_key]
@@ -127,6 +130,10 @@ class ArchetypeRepository(IArchetypeRepository):
         Returns:
             Dictionary containing archetype configuration or None if not found
         """
+        # Map "default" to configured default IoT device archetype
+        if archetype_id == "default":
+            archetype_id = config.get("default_iot_device", "iot-device-default")
+        
         cache_key = f"iot:{archetype_id}"
         if cache_key in self._cache:
             return self._cache[cache_key]
@@ -152,6 +159,10 @@ class ArchetypeRepository(IArchetypeRepository):
         Returns:
             Dictionary containing archetype configuration or None if not found
         """
+        # Map "default" to configured default laptop archetype
+        if archetype_id == "default":
+            archetype_id = config.get("default_laptop", "laptop-pro")
+        
         cache_key = f"terminal:{archetype_id}"
         if cache_key in self._cache:
             return self._cache[cache_key]

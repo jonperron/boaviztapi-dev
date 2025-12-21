@@ -27,7 +27,7 @@ class TestArchetypeRepository:
     
     def test_get_server_archetype_default(self, repository):
         """Test getting default server archetype."""
-        result = repository.get_server_archetype("platform_compute_low")
+        result = repository.get_server_archetype("default")
         
         # Should return a dictionary with archetype configuration
         assert result is not None
@@ -43,10 +43,10 @@ class TestArchetypeRepository:
     def test_get_server_archetype_caching(self, repository):
         """Test that archetype results are cached."""
         # First call
-        result1 = repository.get_server_archetype("platform_compute_low")
+        result1 = repository.get_server_archetype("default")
         
         # Second call should return cached result
-        result2 = repository.get_server_archetype("platform_compute_low")
+        result2 = repository.get_server_archetype("default")
         
         # Should be the same object (cached)
         assert result1 is result2
