@@ -44,6 +44,11 @@ class TestDIContainer:
         """Test that use case obtained from container can execute."""
         from boaviztapi.core.domain.model.device import DeviceConfiguration
         from boaviztapi.core.domain.model.usage import UsageConfiguration
+        from boaviztapi.core.config_constants import (
+            HOURS_PER_YEAR,
+            DEFAULT_LIFETIME_HOURS,
+            DEFAULT_LOCATION
+        )
         
         container = get_container()
         use_case = container.get_compute_server_impact_use_case()
@@ -60,9 +65,9 @@ class TestDIContainer:
         from decimal import Decimal
         
         usage_config = UsageConfiguration(
-            hours_use_time=Decimal("8760.0"),
-            hours_life_time=Decimal("35040.0"),
-            location="EEE"
+            hours_use_time=Decimal(str(HOURS_PER_YEAR)),
+            hours_life_time=Decimal(str(DEFAULT_LIFETIME_HOURS)),
+            location=DEFAULT_LOCATION
         )
         
         # Execute use case

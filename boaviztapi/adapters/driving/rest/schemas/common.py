@@ -66,19 +66,23 @@ class UsageSchema(BaseModel):
     def to_domain(usage_schema: 'UsageSchema'):
         """Convert UsageSchema to domain UsageConfiguration."""
         from boaviztapi.core.domain.model.usage import UsageConfiguration
-        from boaviztapi import config
+        from boaviztapi.core.config_constants import (
+            HOURS_PER_YEAR,
+            DEFAULT_LIFETIME_HOURS,
+            DEFAULT_LOCATION
+        )
         from decimal import Decimal
         
         # Use provided values or defaults from config
-        hours_life_time = usage_schema.hours_life_time if usage_schema.hours_life_time else 35040.0
+        hours_life_time = usage_schema.hours_life_time if usage_schema.hours_life_time else DEFAULT_LIFETIME_HOURS
         
         workload_dict = None
         if usage_schema.workload:
             workload_dict = {k: Decimal(str(v)) for k, v in usage_schema.workload.items()}
         
         return UsageConfiguration(
-            hours_use_time=Decimal("8760.0"),  # Assume full year usage
+            hours_use_time=Decimal(str(HOURS_PER_YEAR)),
             hours_life_time=Decimal(str(hours_life_time)),
-            location=usage_schema.usage_location if usage_schema.usage_location else config.get("default_location", "EEE"),
+            location=usage_schema.usage_location if usage_schema.usage_location else DEFAULT_LOCATION,
             workload=workload_dict
         )

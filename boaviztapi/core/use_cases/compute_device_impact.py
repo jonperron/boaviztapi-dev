@@ -22,6 +22,7 @@ from boaviztapi.core.domain.exceptions import (
     InvalidUsageConfigurationError,
 )
 from decimal import Decimal
+from boaviztapi.core.config_constants import HOURS_PER_YEAR
 
 
 class ComputeIoTImpactUseCase(IComputeIoTImpact):
@@ -51,7 +52,7 @@ class ComputeIoTImpactUseCase(IComputeIoTImpact):
             raise InvalidUsageConfigurationError("Usage configuration is required")
         
         if duration is None:
-            duration = 8760.0
+            duration = HOURS_PER_YEAR
         
         # TODO: Implement actual computation logic
         stub_impact = ImpactValue(
@@ -71,7 +72,7 @@ class ComputeIoTImpactUseCase(IComputeIoTImpact):
         return ImpactResult(
             impacts={},
             phases=phases,
-            duration_years=duration / 8760.0,
+            duration_years=duration / HOURS_PER_YEAR,
             verbose_data={} if verbose else None
         )
 
@@ -103,7 +104,7 @@ class ComputeTerminalImpactUseCase(IComputeTerminalImpact):
             raise InvalidUsageConfigurationError("Usage configuration is required")
         
         if duration is None:
-            duration = 8760.0
+            duration = HOURS_PER_YEAR
         
         # TODO: Implement actual computation logic
         stub_impact = ImpactValue(
@@ -123,6 +124,6 @@ class ComputeTerminalImpactUseCase(IComputeTerminalImpact):
         return ImpactResult(
             impacts={},
             phases=phases,
-            duration_years=duration / 8760.0,
+            duration_years=duration / HOURS_PER_YEAR,
             verbose_data={} if verbose else None
         )
