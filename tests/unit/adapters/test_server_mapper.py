@@ -36,7 +36,6 @@ class TestServerMapper:
         cpu_config = ServerMapper.to_cpu_configuration(cpu_schema)
         
         assert cpu_config is not None
-        assert cpu_config.units == 2
         assert cpu_config.core_units == 24
         assert cpu_config.die_size_per_core == Decimal("24.5")
         assert cpu_config.name == "Intel Xeon Gold"
@@ -54,7 +53,6 @@ class TestServerMapper:
         cpu_config = ServerMapper.to_cpu_configuration(cpu_schema)
         
         assert cpu_config is not None
-        assert cpu_config.units is None
         assert cpu_config.core_units == 12
         assert cpu_config.die_size_per_core == Decimal("24.5")
         assert cpu_config.name is None
@@ -75,11 +73,9 @@ class TestServerMapper:
         
         assert ram_configs is not None
         assert len(ram_configs) == 2
-        assert ram_configs[0].units == 4
-        assert ram_configs[0].capacity == Decimal("32")
+        assert ram_configs[0].capacity_gb == Decimal("32")
         assert ram_configs[0].density == Decimal("1.79")
-        assert ram_configs[1].units == 4
-        assert ram_configs[1].capacity == Decimal("16")
+        assert ram_configs[1].capacity_gb == Decimal("16")
     
     def test_to_ram_configurations_none(self):
         """Test converting None RAM schemas."""
@@ -97,13 +93,10 @@ class TestServerMapper:
         
         assert disk_configs is not None
         assert len(disk_configs) == 2
-        assert disk_configs[0].units == 2
         assert disk_configs[0].type == "ssd"
-        assert disk_configs[0].capacity == Decimal("400")
-        assert disk_configs[0].density == Decimal("50.6")
-        assert disk_configs[1].units == 2
+        assert disk_configs[0].capacity_gb == Decimal("400")
         assert disk_configs[1].type == "hdd"
-        assert disk_configs[1].capacity is None
+        assert disk_configs[1].capacity_gb is None
     
     def test_to_power_supply_configuration(self):
         """Test converting power supply schema to domain model."""
@@ -112,26 +105,7 @@ class TestServerMapper:
         ps_config = ServerMapper.to_power_supply_configuration(ps_schema)
         
         assert ps_config is not None
-        assert ps_config.units == 2
-        assert ps_config.unit_weight == Decimal("10")
-    
-    def test_to_motherboard_configuration(self):
-        """Test converting motherboard schema to domain model."""
-        mb_schema = MotherboardSchema(units=1)
-        
-        mb_config = ServerMapper.to_motherboard_configuration(mb_schema)
-        
-        assert mb_config is not None
-        assert mb_config.units == 1
-    
-    def test_to_assembly_configuration(self):
-        """Test converting assembly schema to domain model."""
-        asm_schema = AssemblySchema(units=1)
-        
-        asm_config = ServerMapper.to_assembly_configuration(asm_schema)
-        
-        assert asm_config is not None
-        assert asm_config.units == 1
+        assert ps_config.unit_weight_kg == Decimal("10")
     
     def test_to_case_configuration(self):
         """Test converting case schema to domain model."""
@@ -140,7 +114,6 @@ class TestServerMapper:
         case_config = ServerMapper.to_case_configuration(case_schema)
         
         assert case_config is not None
-        assert case_config.units == 1
         assert case_config.case_type == "rack"
     
     def test_to_device_configuration_complete(self):
@@ -168,14 +141,12 @@ class TestServerMapper:
         
         assert device_config is not None
         assert device_config.cpu is not None
-        assert device_config.cpu.units == 2
         assert device_config.cpu.core_units == 24
         assert device_config.ram is not None
         assert len(device_config.ram) == 2
         assert device_config.disk is not None
         assert len(device_config.disk) == 2
         assert device_config.power_supply is not None
-        assert device_config.power_supply.units == 2
     
     def test_to_device_configuration_empty(self):
         """Test converting empty server request to device configuration."""
@@ -185,8 +156,8 @@ class TestServerMapper:
         
         assert device_config is not None
         assert device_config.cpu is None
-        assert device_config.ram is None
-        assert device_config.disk is None
+        assert device_config.ram == []
+        assert device_config.disk == []
     
     def test_to_usage_configuration_complete(self):
         """Test converting complete usage schema to domain model."""
@@ -200,13 +171,12 @@ class TestServerMapper:
         usage_config = ServerMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "FRA"
+        assert usage_config.location == "FRA"
         assert usage_config.hours_life_time == Decimal("35040.0")
-        assert usage_config.time_workload == Decimal("50.0")
-        assert usage_config.workload_profile is not None
-        assert usage_config.workload_profile.percentages["10"] == Decimal("10.0")
-        assert usage_config.workload_profile.percentages["50"] == Decimal("50.0")
-        assert usage_config.workload_profile.percentages["100"] == Decimal("40.0")
+        assert usage_config.workload is not None
+        assert usage_config.workload["10"] == Decimal("10.0")
+        assert usage_config.workload["50"] == Decimal("50.0")
+        assert usage_config.workload["100"] == Decimal("40.0")
     
     def test_to_usage_configuration_minimal(self):
         """Test converting minimal usage schema to domain model."""
@@ -215,15 +185,14 @@ class TestServerMapper:
         usage_config = ServerMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "USA"
+        assert usage_config.location == "USA"
         assert usage_config.hours_life_time is None
-        assert usage_config.time_workload is None
-        assert usage_config.workload_profile is None
+        assert usage_config.workload is None
     
     def test_to_usage_configuration_none(self):
         """Test converting None usage schema."""
         usage_config = ServerMapper.to_usage_configuration(None)
         
         assert usage_config is not None
-        assert usage_config.usage_location is None
+        assert usage_config.location is None
         assert usage_config.hours_life_time is None

@@ -8,7 +8,7 @@ from boaviztapi.core.domain.model.device import (
     RAMConfiguration,
     DiskConfiguration
 )
-from boaviztapi.core.domain.model.usage import UsageConfiguration, WorkloadProfile
+from boaviztapi.core.domain.model.usage import UsageConfiguration
 from boaviztapi.adapters.driving.rest.schemas.component import (
     ComponentCPURequestSchema,
     ComponentRAMRequestSchema,
@@ -32,7 +32,6 @@ class ComponentMapper:
             Domain CPU configuration
         """
         return CPUConfiguration(
-            units=request.units,
             core_units=request.core_units,
             die_size_per_core=Decimal(str(request.die_size_per_core)) 
                 if request.die_size_per_core is not None else None,
@@ -54,8 +53,7 @@ class ComponentMapper:
             Domain RAM configuration
         """
         return RAMConfiguration(
-            units=request.units,
-            capacity=Decimal(str(request.capacity)) if request.capacity is not None else None,
+            capacity_gb=Decimal(str(request.capacity)) if request.capacity is not None else None,
             density=Decimal(str(request.density)) if request.density is not None else None,
             manufacturer=request.manufacturer
         )
@@ -72,10 +70,8 @@ class ComponentMapper:
             Domain disk configuration (SSD type)
         """
         return DiskConfiguration(
-            units=request.units,
             type="ssd",
-            capacity=Decimal(str(request.capacity)) if request.capacity is not None else None,
-            density=Decimal(str(request.density)) if request.density is not None else None,
+            capacity_gb=Decimal(str(request.capacity)) if request.capacity is not None else None,
             manufacturer=request.manufacturer
         )
     
@@ -93,17 +89,13 @@ class ComponentMapper:
         if not usage_schema:
             return UsageConfiguration()
         
-        workload_profile = None
+        workload = None
         if usage_schema.workload:
-            workload_profile = WorkloadProfile(
-                percentages={k: Decimal(str(v)) for k, v in usage_schema.workload.items()}
-            )
+            workload = {k: Decimal(str(v)) for k, v in usage_schema.workload.items()}
         
         return UsageConfiguration(
-            usage_location=usage_schema.usage_location,
+            location=usage_schema.usage_location,
             hours_life_time=Decimal(str(usage_schema.hours_life_time)) 
                 if usage_schema.hours_life_time is not None else None,
-            time_workload=Decimal(str(usage_schema.time_workload)) 
-                if usage_schema.time_workload is not None else None,
-            workload_profile=workload_profile
+            workload=workload
         )

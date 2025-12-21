@@ -30,7 +30,6 @@ class TestComponentMapper:
         cpu_config = ComponentMapper.to_cpu_configuration(request)
         
         assert cpu_config is not None
-        assert cpu_config.units == 1
         assert cpu_config.core_units == 12
         assert cpu_config.die_size_per_core == Decimal("24.5")
         assert cpu_config.name == "Intel Core i7"
@@ -48,7 +47,6 @@ class TestComponentMapper:
         cpu_config = ComponentMapper.to_cpu_configuration(request)
         
         assert cpu_config is not None
-        assert cpu_config.units is None
         assert cpu_config.core_units == 12
         assert cpu_config.die_size_per_core == Decimal("24.5")
         assert cpu_config.name is None
@@ -66,8 +64,7 @@ class TestComponentMapper:
         ram_config = ComponentMapper.to_ram_configuration(request)
         
         assert ram_config is not None
-        assert ram_config.units == 8
-        assert ram_config.capacity == Decimal("16.0")
+        assert ram_config.capacity_gb == Decimal("16.0")
         assert ram_config.density == Decimal("2.0")
         assert ram_config.manufacturer == "Samsung"
     
@@ -80,8 +77,7 @@ class TestComponentMapper:
         ram_config = ComponentMapper.to_ram_configuration(request)
         
         assert ram_config is not None
-        assert ram_config.units is None
-        assert ram_config.capacity == Decimal("8.0")
+        assert ram_config.capacity_gb == Decimal("8.0")
         assert ram_config.density is None
         assert ram_config.manufacturer is None
     
@@ -97,10 +93,8 @@ class TestComponentMapper:
         ssd_config = ComponentMapper.to_ssd_configuration(request)
         
         assert ssd_config is not None
-        assert ssd_config.units == 2
         assert ssd_config.type == "ssd"
-        assert ssd_config.capacity == Decimal("500.0")
-        assert ssd_config.density == Decimal("50.0")
+        assert ssd_config.capacity_gb == Decimal("500.0")
         assert ssd_config.manufacturer == "Samsung"
     
     def test_to_ssd_configuration_minimal(self):
@@ -112,10 +106,9 @@ class TestComponentMapper:
         ssd_config = ComponentMapper.to_ssd_configuration(request)
         
         assert ssd_config is not None
-        assert ssd_config.units is None
         assert ssd_config.type == "ssd"
-        assert ssd_config.capacity == Decimal("256.0")
-        assert ssd_config.density is None
+        assert ssd_config.capacity_gb == Decimal("256.0")
+        assert ssd_config.manufacturer is None
     
     def test_to_usage_configuration_complete(self):
         """Test converting complete usage schema to domain model."""
@@ -129,11 +122,10 @@ class TestComponentMapper:
         usage_config = ComponentMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "FRA"
+        assert usage_config.location == "FRA"
         assert usage_config.hours_life_time == Decimal("26280.0")
-        assert usage_config.time_workload == Decimal("50.0")
-        assert usage_config.workload_profile is not None
-        assert usage_config.workload_profile.percentages["idle"] == Decimal("10.0")
+        assert usage_config.workload is not None
+        assert usage_config.workload["idle"] == Decimal("10.0")
     
     def test_to_usage_configuration_minimal(self):
         """Test converting minimal usage schema."""
@@ -144,17 +136,15 @@ class TestComponentMapper:
         usage_config = ComponentMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "USA"
+        assert usage_config.location == "USA"
         assert usage_config.hours_life_time is None
-        assert usage_config.time_workload is None
-        assert usage_config.workload_profile is None
+        assert usage_config.workload is None
     
     def test_to_usage_configuration_none(self):
         """Test converting None usage schema."""
         usage_config = ComponentMapper.to_usage_configuration(None)
         
         assert usage_config is not None
-        assert usage_config.usage_location is None
+        assert usage_config.location is None
         assert usage_config.hours_life_time is None
-        assert usage_config.time_workload is None
-        assert usage_config.workload_profile is None
+        assert usage_config.workload is None

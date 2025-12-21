@@ -34,7 +34,7 @@ class TestCloudMapper:
         
         assert cloud_config is not None
         assert cloud_config.provider == "azure"
-        assert cloud_config.instance_type is None
+        assert cloud_config.instance_type == ""
     
     def test_to_cloud_instance_configuration_gcp(self):
         """Test converting GCP cloud request."""
@@ -61,13 +61,12 @@ class TestCloudMapper:
         usage_config = CloudMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "USA"
+        assert usage_config.location == "USA"
         assert usage_config.hours_life_time == Decimal("8760.0")
-        assert usage_config.time_workload == Decimal("75.0")
-        assert usage_config.workload_profile is not None
-        assert usage_config.workload_profile.percentages["idle"] == Decimal("20.0")
-        assert usage_config.workload_profile.percentages["50%"] == Decimal("30.0")
-        assert usage_config.workload_profile.percentages["100%"] == Decimal("50.0")
+        assert usage_config.workload is not None
+        assert usage_config.workload["idle"] == Decimal("20.0")
+        assert usage_config.workload["50%"] == Decimal("30.0")
+        assert usage_config.workload["100%"] == Decimal("50.0")
     
     def test_to_usage_configuration_minimal(self):
         """Test converting minimal usage schema."""
@@ -78,20 +77,18 @@ class TestCloudMapper:
         usage_config = CloudMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "EEE"
+        assert usage_config.location == "EEE"
         assert usage_config.hours_life_time is None
-        assert usage_config.time_workload is None
-        assert usage_config.workload_profile is None
+        assert usage_config.workload is None
     
     def test_to_usage_configuration_none(self):
         """Test converting None usage schema."""
         usage_config = CloudMapper.to_usage_configuration(None)
         
         assert usage_config is not None
-        assert usage_config.usage_location is None
+        assert usage_config.location is None
         assert usage_config.hours_life_time is None
-        assert usage_config.time_workload is None
-        assert usage_config.workload_profile is None
+        assert usage_config.workload is None
     
     def test_to_usage_configuration_with_location_only(self):
         """Test converting usage schema with only location."""
@@ -102,6 +99,6 @@ class TestCloudMapper:
         usage_config = CloudMapper.to_usage_configuration(usage_schema)
         
         assert usage_config is not None
-        assert usage_config.usage_location == "FRA"
+        assert usage_config.location == "FRA"
         assert usage_config.hours_life_time is None
-        assert usage_config.workload_profile is None
+        assert usage_config.workload is None

@@ -9,11 +9,9 @@ from boaviztapi.core.domain.model.device import (
     RAMConfiguration,
     DiskConfiguration,
     PowerSupplyConfiguration,
-    MotherboardConfiguration,
-    AssemblyConfiguration,
     CaseConfiguration
 )
-from boaviztapi.core.domain.model.usage import UsageConfiguration, WorkloadProfile
+from boaviztapi.core.domain.model.usage import UsageConfiguration
 from boaviztapi.adapters.driving.rest.schemas.server import (
     ServerRequestSchema,
     CPUSchema,
@@ -45,7 +43,6 @@ class ServerMapper:
             return None
         
         return CPUConfiguration(
-            units=cpu_schema.units,
             core_units=cpu_schema.core_units,
             die_size_per_core=Decimal(str(cpu_schema.die_size_per_core)) 
                 if cpu_schema.die_size_per_core is not None else None,
@@ -71,8 +68,7 @@ class ServerMapper:
         
         return [
             RAMConfiguration(
-                units=ram.units,
-                capacity=Decimal(str(ram.capacity)) if ram.capacity is not None else None,
+                capacity_gb=Decimal(str(ram.capacity)) if ram.capacity is not None else None,
                 density=Decimal(str(ram.density)) if ram.density is not None else None,
                 manufacturer=ram.manufacturer
             )
@@ -95,10 +91,8 @@ class ServerMapper:
         
         return [
             DiskConfiguration(
-                units=disk.units,
                 type=disk.type,
-                capacity=Decimal(str(disk.capacity)) if disk.capacity is not None else None,
-                density=Decimal(str(disk.density)) if disk.density is not None else None,
+                capacity_gb=Decimal(str(disk.capacity)) if disk.capacity is not None else None,
                 manufacturer=disk.manufacturer
             )
             for disk in disk_schemas
@@ -119,42 +113,9 @@ class ServerMapper:
             return None
         
         return PowerSupplyConfiguration(
-            units=ps_schema.units,
-            unit_weight=Decimal(str(ps_schema.unit_weight)) 
+            unit_weight_kg=Decimal(str(ps_schema.unit_weight)) 
                 if ps_schema.unit_weight is not None else None
         )
-    
-    @staticmethod
-    def to_motherboard_configuration(mb_schema: Optional[MotherboardSchema]) -> Optional[MotherboardConfiguration]:
-        """
-        Convert API motherboard schema to domain MotherboardConfiguration.
-        
-        Args:
-            mb_schema: API motherboard schema
-            
-        Returns:
-            Domain motherboard configuration or None
-        """
-        if not mb_schema:
-            return None
-        
-        return MotherboardConfiguration(units=mb_schema.units)
-    
-    @staticmethod
-    def to_assembly_configuration(asm_schema: Optional[AssemblySchema]) -> Optional[AssemblyConfiguration]:
-        """
-        Convert API assembly schema to domain AssemblyConfiguration.
-        
-        Args:
-            asm_schema: API assembly schema
-            
-        Returns:
-            Domain assembly configuration or None
-        """
-        if not asm_schema:
-            return None
-        
-        return AssemblyConfiguration(units=asm_schema.units)
     
     @staticmethod
     def to_case_configuration(case_schema: Optional[CaseSchema]) -> Optional[CaseConfiguration]:
@@ -171,7 +132,6 @@ class ServerMapper:
             return None
         
         return CaseConfiguration(
-            units=case_schema.units,
             case_type=case_schema.case_type
         )
     
@@ -195,8 +155,6 @@ class ServerMapper:
             ram=ServerMapper.to_ram_configurations(config.ram),
             disk=ServerMapper.to_disk_configurations(config.disk),
             power_supply=ServerMapper.to_power_supply_configuration(config.power_supply),
-            motherboard=ServerMapper.to_motherboard_configuration(config.motherboard),
-            assembly=ServerMapper.to_assembly_configuration(config.assembly),
             case=ServerMapper.to_case_configuration(config.case)
         )
     
@@ -214,17 +172,13 @@ class ServerMapper:
         if not usage_schema:
             return UsageConfiguration()
         
-        workload_profile = None
+        workload = None
         if usage_schema.workload:
-            workload_profile = WorkloadProfile(
-                percentages={k: Decimal(str(v)) for k, v in usage_schema.workload.items()}
-            )
+            workload = {k: Decimal(str(v)) for k, v in usage_schema.workload.items()}
         
         return UsageConfiguration(
-            usage_location=usage_schema.usage_location,
+            location=usage_schema.usage_location,
             hours_life_time=Decimal(str(usage_schema.hours_life_time)) 
                 if usage_schema.hours_life_time is not None else None,
-            time_workload=Decimal(str(usage_schema.time_workload)) 
-                if usage_schema.time_workload is not None else None,
-            workload_profile=workload_profile
+            workload=workload
         )
