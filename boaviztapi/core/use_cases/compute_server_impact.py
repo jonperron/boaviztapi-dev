@@ -11,7 +11,8 @@ from boaviztapi.core.ports.output.archetype_repository import IArchetypeReposito
 from boaviztapi.core.ports.output.factor_provider import IFactorProvider
 from boaviztapi.core.domain.model.device import DeviceConfiguration
 from boaviztapi.core.domain.model.usage import UsageConfiguration
-from boaviztapi.core.domain.model.impact import ImpactResult
+from boaviztapi.core.domain.model.impact import ImpactResult, PhaseImpact
+from boaviztapi.core.domain.services.impact_calculator import ImpactCalculator
 from boaviztapi.core.domain.exceptions import (
     InvalidDeviceConfigurationError,
     InvalidUsageConfigurationError,
@@ -41,6 +42,7 @@ class ComputeServerImpactUseCase(IComputeServerImpact):
         """
         self._archetype_repo = archetype_repository
         self._factor_provider = factor_provider
+        self._calculator = ImpactCalculator()
     
     def execute(
         self,
@@ -70,46 +72,64 @@ class ComputeServerImpactUseCase(IComputeServerImpact):
         self._validate_device_config(device_config)
         self._validate_usage_config(usage_config)
         
-        # Use default duration if not provided
+        # Use default duration if not provided (in hours)
         if duration is None:
-            duration = 8760.0  # hours per year
+            duration = 8760.0  # 1 year in hours
         
-        # TODO: Implement actual computation logic
-        # This is a stub implementation that will be completed in later phases
-        # The actual implementation will:
-        # 1. Load archetype defaults if needed
-        # 2. Complete missing configuration values
-        # 3. Compute manufacturing impact
-        # 4. Compute usage impact
-        # 5. Compute end-of-life impact
-        # 6. Aggregate results
+        # Phase 4: Simplified implementation demonstrating hexagonal architecture
+        # TODO: Full migration of Boattribute-based logic in Phase 7
         
-        # For now, return a stub result to maintain interface compatibility
-        from boaviztapi.core.domain.model.impact import (
-            ImpactValue,
-            PhaseImpact,
-        )
-        from decimal import Decimal
+        # Get impact factors from driven adapter
+        impact_factors = self._get_impact_factors()
         
-        stub_impact = ImpactValue(
-            value=Decimal('0'),
-            min_value=Decimal('0'),
-            max_value=Decimal('0'),
-            unit='kgCO2eq',
-            source='STUB'
+        # Get electrical factors for the usage location
+        electrical_factors = self._get_electrical_factors(usage_config.location)
+        
+        # Calculate impacts for each phase using domain service
+        manufacturing_impacts = self._calculator.calculate_manufacturing_impact(
+            device_config=device_config,
+            criteria=criteria,
+            impact_factors=impact_factors
         )
         
-        phases = PhaseImpact(
-            manufacturing={},
-            use={},
-            end_of_life={}
+        use_impacts = self._calculator.calculate_use_impact(
+            device_config=device_config,
+            usage_config=usage_config,
+            criteria=criteria,
+            duration_hours=duration,
+            electrical_factors=electrical_factors
         )
+        
+        end_of_life_impacts = self._calculator.calculate_end_of_life_impact(
+            device_config=device_config,
+            criteria=criteria,
+            impact_factors=impact_factors
+        )
+        
+        # Aggregate total impacts
+        total_impacts = self._calculator.aggregate_phase_impacts(
+            manufacturing=manufacturing_impacts,
+            use=use_impacts,
+            end_of_life=end_of_life_impacts
+        )
+        
+        # Build phase impact structure
+        phases = self._build_phase_impacts(
+            manufacturing_impacts,
+            use_impacts,
+            end_of_life_impacts
+        )
+        
+        # Build verbose data if requested
+        verbose_data = None
+        if verbose:
+            verbose_data = self._build_verbose_data(device_config, usage_config)
         
         return ImpactResult(
-            impacts={},
+            impacts=total_impacts,
             phases=phases,
             duration_years=duration / 8760.0,
-            verbose_data={} if verbose else None
+            verbose_data=verbose_data
         )
     
     def _validate_device_config(self, config: DeviceConfiguration) -> None:
@@ -124,3 +144,53 @@ class ComputeServerImpactUseCase(IComputeServerImpact):
         """Validate usage configuration."""
         if config is None:
             raise InvalidUsageConfigurationError("Usage configuration is required")
+    
+    def _get_impact_factors(self) -> dict:
+        """Get impact factors from factor provider.
+        
+        TODO: Implement actual factor retrieval using self._factor_provider
+        For now, return simplified factors for demonstration
+        """
+        return {
+            'cpu': {'impact': 20.0, 'die_impact': 2.0},
+            'ram': {'impact': 10.0, 'die_impact': 0.5},
+            'ssd': {'impact': 15.0, 'die_impact': 1.0},
+            'hdd': {'impact': 12.0},
+        }
+    
+    def _get_electrical_factors(self, location: Optional[str]) -> dict:
+        """Get electrical factors for the specified location.
+        
+        TODO: Implement actual electrical factor retrieval using self._factor_provider
+        For now, return simplified factors (world average)
+        """
+        # Simplified world average electrical factors
+        return {
+            'gwp': 0.5,  # kgCO2eq/kWh
+            'pe': 11.0,  # MJ/kWh
+            'adp': 0.00002,  # kgSbeq/kWh
+        }
+    
+    def _build_phase_impacts(self, manufacturing, use, end_of_life) -> PhaseImpact:
+        """Build PhaseImpact structure from individual phase impacts."""
+        return PhaseImpact(
+            manufacturing={k: v for k, v in manufacturing.items()},
+            use={k: v for k, v in use.items()},
+            end_of_life={k: v for k, v in end_of_life.items()}
+        )
+    
+    def _build_verbose_data(self, device_config, usage_config) -> dict:
+        """Build verbose data for detailed output.
+        
+        TODO: Include detailed component information when verbose=True
+        """
+        return {
+            'device': {
+                'cpu': device_config.cpu is not None,
+                'ram_count': len(device_config.ram) if device_config.ram else 0,
+                'disk_count': len(device_config.disk) if device_config.disk else 0,
+            },
+            'usage': {
+                'location': usage_config.location,
+            }
+        }
