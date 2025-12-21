@@ -23,6 +23,12 @@ from boaviztapi.adapters.driving.rest.mappers.server_mapper import ServerMapper
 from boaviztapi.adapters.driving.rest.mappers.response_mapper import ResponseMapper
 from boaviztapi.core.domain.model.usage import UsageConfiguration
 from boaviztapi.core.domain.model.device import DeviceConfiguration
+from boaviztapi.core.config_constants import (
+    HOURS_PER_YEAR,
+    DEFAULT_LIFETIME_HOURS,
+    DEFAULT_LOCATION
+)
+from decimal import Decimal
 
 server_router = APIRouter(
     prefix='/v1/server',
@@ -152,16 +158,15 @@ async def server_impact_v2(
         usage_config = UsageSchema.to_domain(usage)
     else:
         # Use default usage from config
-        from decimal import Decimal
         usage_config = UsageConfiguration(
-            hours_use_time=Decimal("8760.0"),  # 1 year
-            hours_life_time=Decimal("35040.0"),  # 4 years
-            location=config.get("default_location", "EEE")
+            hours_use_time=Decimal(str(HOURS_PER_YEAR)),
+            hours_life_time=Decimal(str(DEFAULT_LIFETIME_HOURS)),
+            location=DEFAULT_LOCATION
         )
     
     # Use default duration if not provided
     if duration is None:
-        duration = 8760.0  # 1 year in hours
+        duration = HOURS_PER_YEAR
     
     # Execute use case
     try:

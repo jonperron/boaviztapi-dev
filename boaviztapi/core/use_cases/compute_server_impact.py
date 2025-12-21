@@ -18,6 +18,7 @@ from boaviztapi.core.domain.exceptions import (
     InvalidUsageConfigurationError,
     MissingRequiredDataError,
 )
+from boaviztapi.core.config_constants import HOURS_PER_YEAR
 
 
 class ComputeServerImpactUseCase(IComputeServerImpact):
@@ -74,7 +75,7 @@ class ComputeServerImpactUseCase(IComputeServerImpact):
         
         # Use default duration if not provided (in hours)
         if duration is None:
-            duration = 8760.0  # 1 year in hours
+            duration = HOURS_PER_YEAR
         
         # Phase 4: Simplified implementation demonstrating hexagonal architecture
         # TODO: Full migration of Boattribute-based logic in Phase 7
@@ -128,7 +129,7 @@ class ComputeServerImpactUseCase(IComputeServerImpact):
         return ImpactResult(
             impacts=total_impacts,
             phases=phases,
-            duration_years=duration / 8760.0,
+            duration_years=duration / HOURS_PER_YEAR,
             verbose_data=verbose_data
         )
     

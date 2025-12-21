@@ -230,11 +230,14 @@ class ImpactCalculator:
         
         TODO: Full implementation using power modeling from service layer
         """
+        from boaviztapi.core.config_constants import DEFAULT_WORKLOAD_PERCENTAGE
         total_power = 0.0
         
         # Simplified CPU power estimation
         if device_config.cpu:
-            cpu_tdp = getattr(device_config.cpu, 'tdp', 100.0)
+            cpu_tdp = getattr(device_config.cpu, 'tdp', None)
+            if cpu_tdp is None:
+                cpu_tdp = 100.0  # Default TDP if not specified
             if isinstance(cpu_tdp, Decimal):
                 cpu_tdp = float(cpu_tdp)
             units = getattr(device_config.cpu, 'units', 1)

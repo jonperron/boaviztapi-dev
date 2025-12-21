@@ -17,6 +17,7 @@ from boaviztapi.core.domain.exceptions import (
     InvalidUsageConfigurationError,
     MissingRequiredDataError,
 )
+from boaviztapi.core.config_constants import HOURS_PER_YEAR
 
 
 class ComputeComponentImpactUseCase(IComputeComponentImpact):
@@ -72,7 +73,7 @@ class ComputeComponentImpactUseCase(IComputeComponentImpact):
         
         # Use default duration if not provided
         if duration is None:
-            duration = 8760.0  # hours per year
+            duration = HOURS_PER_YEAR
         
         # TODO: Implement actual computation logic
         # This is a stub implementation
@@ -99,7 +100,7 @@ class ComputeComponentImpactUseCase(IComputeComponentImpact):
         return ImpactResult(
             impacts={},
             phases=phases,
-            duration_years=duration / 8760.0,
+            duration_years=duration / HOURS_PER_YEAR,
             verbose_data={} if verbose else None
         )
     
