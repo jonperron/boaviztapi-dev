@@ -32,6 +32,7 @@ class ServiceStorage(Service):
         self.manufacturer = Boattribute()
         self.storage = Boattribute(unit="GB")
         self.replication = Boattribute(default=1, min=1, max=1)
+        self.reference_capacity = Boattribute(unit="GB")
         self.usage = ModelUsage(archetype=get_arch_component(archetype, "USAGE"))
 
     def reference_disk(self):
@@ -40,8 +41,15 @@ class ServiceStorage(Service):
         disk = disk_model(archetype=_reference_archetype(self.storage_type))
         # Fix the reference capacity: its archetype range (e.g. 100-5000 GB) would
         # otherwise widen the per-GB min/max bounds through the disk's own formula.
-        disk.capacity.set_input(disk.capacity.value)
+        if self.reference_capacity.has_value():
+            disk.capacity.set_input(self.reference_capacity.value)
+        else:
+            disk.capacity.set_input(disk.capacity.value)
         if self.manufacturer.has_value():
             disk.manufacturer.set_input(self.manufacturer.value)
         disk.usage = self.usage
         return disk
+
+    def __iter__(self):
+        for attr, value in self.__dict__.items():
+            yield attr, value
