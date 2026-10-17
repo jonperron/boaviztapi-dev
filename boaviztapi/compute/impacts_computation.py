@@ -5,6 +5,7 @@ from boaviztapi.models import ComputedImpacts
 from boaviztapi.models.boattribute import Boattribute
 from boaviztapi.models.device.server import DeviceServer
 from boaviztapi.models.services.cloud_instance import Service, ServiceCloudInstance
+from boaviztapi.models.services.storage import ServiceStorage
 from boaviztapi.models.component import (
     ComponentCPU,
     ComponentGPU,
@@ -952,12 +953,37 @@ def cloud_impact_use(
     return impact, min_impact, max_impact, []
 
 
+def storage_as_a_service_impact_embedded(
+    impact_type: str, duration: int, storage: ServiceStorage
+) -> ComputedImpacts:
+    disk = storage.reference_disk()
+    # Share of the reference disk's impact that the stored, replicated GB represent
+    allocation = storage.storage.value * storage.replication.value / disk.capacity.value
+    single_impact = compute_single_impact(
+        disk, "embedded", impact_type, duration, allocation
+    )
+    if single_impact is None:
+        raise NotImplementedError
+
+    warnings = list(single_impact.warnings)
+    if storage.storage_type == "HDD":
+        warnings.append(
+            "HDD impact does not vary with capacity: the per-GB value is taken "
+            "from the reference disk capacity."
+        )
+    return single_impact.value, single_impact.min, single_impact.max, warnings
+
+
 impacts_functions = {
     "CPU": {"use": cpu_impact_use, "embedded": cpu_impact_embedded},
     "GPU": {"use": simple_impact_use, "embedded": gpu_impact_embedded},
     "RAM": {"use": ram_impact_use, "embedded": ram_impact_embedded},
     "SSD": {"use": simple_impact_use, "embedded": ssd_impact_embedded},
     "HDD": {"use": simple_impact_use, "embedded": hdd_impact_embedded},
+    "STORAGE_AS_A_SERVICE": {
+        "use": not_implemented_function,
+        "embedded": storage_as_a_service_impact_embedded,
+    },
     "POWER_SUPPLY": {
         "use": not_implemented_function,
         "embedded": power_supply_impact_embedded,

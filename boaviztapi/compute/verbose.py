@@ -3,6 +3,7 @@ from boaviztapi.models.boattribute import Boattribute
 from boaviztapi.models.device import Device
 from boaviztapi.models.component import Component
 from boaviztapi.models.services.cloud_instance import ServiceCloudInstance, Service
+from boaviztapi.models.services.storage import ServiceStorage
 
 
 def verbose_cloud(
@@ -97,4 +98,17 @@ def iter_boattribute(element):
             continue
         if val.is_set():
             json_output[attr] = val.to_json()
+    return json_output
+
+
+def verbose_storage(
+    storage: ServiceStorage,
+    selected_criteria=config.default_criteria,
+    duration=config.default_duration,
+):
+    json_output = {
+        "impacts": storage.get_impacts(selected_criteria),
+        **iter_boattribute(storage),
+        "duration": {"value": duration, "unit": "hours"},
+    }
     return json_output
