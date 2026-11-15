@@ -56,6 +56,21 @@ class Usage(BaseDTO):
     elec_factors: Optional[ElecFactors] = ElecFactors()
 
 
+class UsageStorage(Usage):
+    storage: float = Field(ge=0, description="Stored data in GB")
+    hours_electrical_consumption: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=24,
+        description="Hours per day the disk is powered on (use_time_ratio = hours / 24)",
+    )
+    avg_power: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Power in W of the whole reference disk, scaled by the allocation",
+    )
+
+
 class UsageServer(Usage):
     other_consumption_ratio: Optional[float] = None
     # Load of the GPUs in %, 65% by default (see gpu_usage_archetype)
